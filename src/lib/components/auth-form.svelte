@@ -12,10 +12,14 @@
 	let email = $state('');
 	let password = $state('');
 	let fullName = $state('');
+    let isLoading = $state(false);
 
-	function handleSubmit(e: Event) {
+	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		// Handle form submission
+        isLoading = true;
+		// Simulate network request
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        isLoading = false;
 	}
 </script>
 
@@ -40,11 +44,14 @@
 					<Label for="fullName" class="sr-only">Full name</Label>
 					<Input
 						id="fullName"
+                        name="name"
 						type="text"
+                        autocomplete="name"
 						placeholder="Full name"
 						bind:value={fullName}
 						class="transition-colors"
 						variant="underlined"
+                        disabled={isLoading}
 					/>
 				</div>
 			{/if}
@@ -53,11 +60,14 @@
 				<Label for="email" class="sr-only">Email</Label>
 				<Input
 					id="email"
+                    name="email"
 					type="email"
+                    autocomplete="email"
 					placeholder="Email"
 					bind:value={email}
 					class="transition-colors"
 					variant="underlined"
+                    disabled={isLoading}
 				/>
 			</div>
 
@@ -65,11 +75,14 @@
 				<Label for="password" class="sr-only">Password</Label>
 				<Input
 					id="password"
+                    name="password"
 					type="password"
+                    autocomplete={mode === 'signin' ? "current-password" : "new-password"}
 					placeholder="Password"
 					bind:value={password}
 					class="transition-colors"
 					variant="underlined"
+                    disabled={isLoading}
 				/>
 			</div>
 
@@ -81,7 +94,7 @@
 				</div>
 			{/if}
 
-			<Button type="submit" class="w-full h-12 text-base font-medium rounded-lg">
+			<Button type="submit" class="w-full h-12 text-base font-medium rounded-lg" loading={isLoading}>
 				{mode === 'signin' ? 'Sign in' : 'Create account'}
 			</Button>
 		</form>
