@@ -23,7 +23,7 @@
 	}
 </script>
 
-<div class="flex min-h-screen items-center justify-center px-4">
+<div class="flex min-h-screen items-center justify-center px-4 py-12">
 	<div class="w-full max-w-sm">
 		<!-- Logo -->
 		<div class="mb-12 text-center">
