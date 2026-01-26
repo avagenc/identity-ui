@@ -8,12 +8,20 @@
 
 	let password = $state('');
     let confirmPassword = $state('');
+    let honeypot = $state('');
     let isLoading = $state(false);
     let errorMessage = $state('');
     let success = $state(false);
     let verifyingSession = $state(true);
     let sessionValid = $state(false);
     let authListener: any = null;
+
+    const hasMinLength = $derived(password.length >= 8);
+    const hasUppercase = $derived(/[A-Z]/.test(password));
+    const hasNumber = $derived(/[0-9]/.test(password));
+    const isPasswordValid = $derived(hasMinLength && hasUppercase && hasNumber);
+    const passwordsMatch = $derived(password === confirmPassword && confirmPassword.length > 0);
+    const isFormValid = $derived(isPasswordValid && passwordsMatch);
 
     onMount(async () => {
         // Initial check: if we already have a session (e.g. from previous nav or fast load)
@@ -56,6 +64,8 @@
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
+        if (honeypot) return;
+
         isLoading = true;
         errorMessage = '';
 
@@ -75,7 +85,11 @@
             window.history.replaceState(null, '', window.location.pathname);
         } catch (error: any) {
             console.error('Update password error:', error);
-            errorMessage = error.message || 'An unexpected error occurred.';
+            if (error.status === 429 || error.message?.includes('rate limit')) {
+                errorMessage = 'Too many attempts. Please wait a moment and try again.';
+            } else {
+                errorMessage = error.message || 'An unexpected error occurred.';
+            }
         } finally {
             isLoading = false;
         }
@@ -183,7 +197,25 @@
                         variant="underlined"
                         disabled={isLoading}
                     />
+                    {#if password.length > 0}
+                        <div class="flex gap-3 text-xs pt-1">
+                            <span class={hasMinLength ? 'text-green-600' : 'text-muted-foreground'}>8+ chars</span>
+                            <span class={hasUppercase ? 'text-green-600' : 'text-muted-foreground'}>1 uppercase</span>
+                            <span class={hasNumber ? 'text-green-600' : 'text-muted-foreground'}>1 number</span>
+                        </div>
+                    {/if}
                 </div>
+
+                <!-- Honeypot field -->
+                <input
+                    type="text"
+                    name="website"
+                    bind:value={honeypot}
+                    autocomplete="off"
+                    tabindex="-1"
+                    aria-hidden="true"
+                    style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;"
+                />
 
                 <div class="space-y-2">
                     <Label for="confirmPassword" class="sr-only">Confirm Password</Label>
@@ -200,7 +232,7 @@
                     />
                 </div>
 
-                <Button type="submit" class="w-full h-12 text-base font-medium rounded-lg" loading={isLoading}>
+                <Button type="submit" class="w-full h-12 text-base font-medium rounded-lg" loading={isLoading} disabled={isLoading || !isFormValid}>
                     Update password
                 </Button>
             </form>
