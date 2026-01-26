@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+    import { page } from '$app/stores';
     import { supabase } from '$lib/supabaseClient';
 	import Button from '$lib/components/ui/button.svelte';
     import Input from '$lib/components/ui/input.svelte';
@@ -19,8 +20,6 @@
     let verificationNeeded = $state(false);
     let resendLoading = $state(false);
     let resendMessage = $state('');
-
-    const DASHBOARD_URL = 'https://avagenc.com/dashboard';
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
@@ -53,8 +52,16 @@
                     }
                     throw error;
                 }
-                // Redirect externally
-                window.location.href = DASHBOARD_URL;
+
+                // Dynamic Redirect Logic
+                const params = new URLSearchParams(window.location.search);
+                const redirectTarget = params.get('redirectTo') || params.get('continue') || params.get('next');
+
+                if (redirectTarget) {
+                    window.location.href = redirectTarget;
+                } else {
+                    await goto('/');
+                }
             }
         } catch (error: any) {
             console.error('Auth error:', error);
