@@ -1,8 +1,20 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { supabase } from '$lib/supabaseClient';
 	import './layout.css';
 	import '../app.css';
 
 	let { children } = $props();
+
+	onMount(() => {
+		const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+			// Trigger server-side guard on auth changes
+			invalidateAll();
+		});
+
+		return () => subscription.unsubscribe();
+	});
 </script>
 
 <svelte:head>

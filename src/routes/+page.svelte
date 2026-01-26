@@ -1,51 +1,23 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
     import { supabase } from '$lib/supabaseClient';
     import Button from '$lib/components/ui/button.svelte';
+    import type { PageData } from './$types';
 
-    let session = $state<any>(null);
-    let loading = $state(true);
-    let user = $state<any>(null);
-
-    onMount(async () => {
-        try {
-            const { data, error } = await supabase.auth.getSession();
-            if (error) throw error;
-
-            if (!data.session) {
-                goto('/signin');
-                return;
-            }
-
-            session = data.session;
-            user = data.session.user;
-        } catch (e) {
-            console.error('Error fetching session:', e);
-            goto('/signin');
-        } finally {
-            loading = false;
-        }
-    });
+    let { data }: { data: PageData } = $props();
+    let user = $derived(data.session?.user ?? null);
 
     async function handleSignOut() {
         const { error } = await supabase.auth.signOut();
-        if (!error) {
-            goto('/signin');
-        }
     }
 </script>
 
-<svelte:head>
-    <title>My Account - Avagenc</title>
-</svelte:head>
-
 <div class="flex min-h-screen items-center justify-center p-4">
-    {#if loading}
+    {#if !user}
         <div class="flex flex-col items-center gap-4">
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900"></div>
         </div>
-    {:else if user}
+    {:else}
         <div class="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div class="text-center space-y-2">
                 <div class="h-20 w-20 bg-neutral-100 rounded-full mx-auto flex items-center justify-center mb-6">

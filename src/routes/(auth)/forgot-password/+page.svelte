@@ -17,7 +17,7 @@
         errorMessage = '';
 
         try {
-            const redirectUrl = `${env.PUBLIC_SITE_URL}/auth/update-password`;
+            const redirectUrl = `${env.PUBLIC_SITE_URL}/update-password`;
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: redirectUrl,
             });
