@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+    import { env } from '$env/dynamic/public';
     import { supabase } from '$lib/supabaseClient';
 	import Button from '$lib/components/ui/button.svelte';
     import Input from '$lib/components/ui/input.svelte';
@@ -16,7 +17,7 @@
         errorMessage = '';
 
         try {
-            const redirectUrl = window.location.origin + '/auth/update-password';
+            const redirectUrl = `${env.PUBLIC_SITE_URL}/auth/update-password`;
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: redirectUrl,
             });

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
     import { page } from '$app/stores';
+    import { env } from '$env/dynamic/public';
     import { supabase } from '$lib/supabaseClient';
 	import Button from '$lib/components/ui/button.svelte';
     import Input from '$lib/components/ui/input.svelte';
@@ -47,6 +48,7 @@
                         data: {
                             full_name: fullName.trim(),
                         },
+                        emailRedirectTo: `${env.PUBLIC_SITE_URL}/signin`,
                     },
                 });
                 if (error) throw error;
