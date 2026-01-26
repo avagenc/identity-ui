@@ -24,3 +24,6 @@ vite.config.ts.timestamp-*
 
 # Agent
 v0code.md
+
+# documentation
+supabase-user-management-docs.md
