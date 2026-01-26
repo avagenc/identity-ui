@@ -1,8 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { env } from '$env/dynamic/public';
+import { building } from '$app/environment';
 
-if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) {
+const supabaseUrl = env.PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+if (!building && (!supabaseUrl || !supabaseAnonKey)) {
     throw new Error('Supabase environment variables missing. Please check your .env file.');
 }
 
-export const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+// During build time, provide a placeholder URL to prevent createClient from throwing
+// This allows the build to complete without needing actual secrets
+const urlToUse = building ? 'https://placeholder.supabase.co' : supabaseUrl;
+const keyToUse = building ? 'placeholder-key' : supabaseAnonKey;
+
+export const supabase = createClient(urlToUse, keyToUse);
