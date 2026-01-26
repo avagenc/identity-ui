@@ -27,7 +27,7 @@
 	<div class="w-full max-w-sm">
 		<!-- Logo -->
 		<div class="mb-12 text-center">
-			<img src="/black-icon-avagenc.svg" alt="Avagenc" class="h-10 mx-auto" />
+			<img src="/favicon.svg" alt="Avagenc" class="h-10 mx-auto brightness-0" />
 		</div>
 
 		<!-- Heading -->
