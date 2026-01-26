@@ -204,7 +204,7 @@
 
                 {#if mode === 'signin'}
                     <div class="text-right">
-                        <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        <a href="/forgot-password" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
                             Forgot password?
                         </a>
                     </div>
