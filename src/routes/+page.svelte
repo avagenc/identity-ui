@@ -25,7 +25,7 @@
                         {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                     </span>
                 </div>
-                <h1 class="text-2xl font-semibold tracking-tight">Welcome back</h1>
+                <h1 class="text-2xl font-semibold tracking-tight" style="font-family: 'Reem Kufi', sans-serif; font-weight: 400;">السلام عليكم</h1>
                 <p class="text-muted-foreground">{user.user_metadata?.full_name || 'User'}</p>
             </div>
 
