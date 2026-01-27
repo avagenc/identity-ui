@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { supabase } from '$lib/supabaseClient';
     import Button from '$lib/components/ui/button.svelte';
+    import loadingSpinner from '$lib/assets/gooey-balls-2.svg';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -15,7 +16,7 @@
 <div class="flex min-h-screen items-center justify-center p-4">
     {#if !user}
         <div class="flex flex-col items-center gap-4">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900"></div>
+             <img src={loadingSpinner} alt="Loading" class="h-12 w-12" />
         </div>
     {:else}
         <div class="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
