@@ -8,9 +8,13 @@
 	let { children } = $props();
 
 	onMount(() => {
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-			// Trigger server-side guard on auth changes
-			invalidateAll();
+		const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+			// Only invalidate on meaningful auth changes
+			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+				// Small delay to ensure cookies are set
+				await new Promise(resolve => setTimeout(resolve, 100));
+				invalidateAll();
+			}
 		});
 
 		return () => subscription.unsubscribe();
