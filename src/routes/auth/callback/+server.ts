@@ -4,6 +4,7 @@ export const GET = async ({ url, locals: { supabase } }) => {
 	const code = url.searchParams.get('code');
 	const next = url.searchParams.get('next') ?? '/';
 
+	// OAuth/PKCE flow: exchange code for session
 	if (code) {
 		const { error } = await supabase.auth.exchangeCodeForSession(code);
 		if (!error) {
@@ -11,6 +12,6 @@ export const GET = async ({ url, locals: { supabase } }) => {
 		}
 	}
 
-	// return the user to an error page with instructions
+	// Fallback: return user to signin with error
 	redirect(303, '/signin?error=oauth_error');
 };

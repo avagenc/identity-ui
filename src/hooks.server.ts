@@ -26,15 +26,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.user = session?.user ?? null;
 
 	const path = event.url.pathname;
-	const isAuthRoute = ['/signin', '/signup', '/forgot-password', '/update-password'].some(p => path === p || path.startsWith(p + '/'));
+	const isGuestRoute = ['/signin', '/signup'].some(p => path === p || path.startsWith(p + '/'));
 	const isProtectedRoute = path === '/';
 
-	// Scenario B (The Member): Already authenticated users shouldn't see auth forms
-	if (session && isAuthRoute) {
+	// Authenticated users shouldn't see guest pages (signin/signup)
+	if (session && isGuestRoute) {
 		throw redirect(303, '/');
 	}
 
-	// Scenario A (The Guest): Unauthenticated users shouldn't access protected content
+	// Guests shouldn't access protected content
 	if (!session && isProtectedRoute) {
 		throw redirect(303, '/signin');
 	}

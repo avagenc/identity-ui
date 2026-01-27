@@ -258,13 +258,7 @@
                     {/if}
                 </div>
 
-                {#if mode === 'signin'}
-                    <div class="text-right">
-                        <a href="/forgot-password" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            Forgot password?
-                        </a>
-                    </div>
-                {/if}
+
 
                 <Button type="submit" class="w-full h-12 text-base font-medium rounded-lg" loading={isLoading} disabled={isLoading || !isFormValid}>
                     {mode === 'signin' ? 'Sign in' : 'Create account'}
