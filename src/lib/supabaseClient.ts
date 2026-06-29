@@ -1,8 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { createBrowserClient, isBrowser, parseCookieHeader } from '@supabase/ssr';
+import { env } from '$env/dynamic/public';
+import { building } from '$app/environment';
 
-if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) {
+const supabaseUrl = env.PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+if (!building && (!supabaseUrl || !supabaseAnonKey)) {
     throw new Error('Supabase environment variables missing. Please check your .env file.');
 }
 
-export const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+// Global client for browser usage
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+

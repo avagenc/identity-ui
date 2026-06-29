@@ -49,8 +49,8 @@ jobs:
           flags: "--allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=1 --cpu-boost"
 
           env_vars: |
-            APP_ENV=${{ env.APP_ENV }}
-
-          secrets: |
-            PUBLIC_SUPABASE_URL=IDENTITY_SUPABASE_URL:latest
-            PUBLIC_SUPABASE_ANON_KEY=IDENTITY_SUPABASE_ANON_KEY:latest
+            APP_ENV=${{ vars.APP_ENV }}
+            ORIGIN=${{ vars.SITE_URL }}
+            PUBLIC_SITE_URL=${{ vars.SITE_URL }}
+            PUBLIC_SUPABASE_URL=${{ vars.SUPABASE_URL }}
+            PUBLIC_SUPABASE_ANON_KEY=${{ vars.SUPABASE_ANON_KEY }}

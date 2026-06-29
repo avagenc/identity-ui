@@ -1,15 +1,31 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { supabase } from '$lib/supabaseClient';
 	import './layout.css';
 	import '../app.css';
 
 	let { children } = $props();
+
+	onMount(() => {
+		const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+			// Only invalidate on meaningful auth changes
+			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+				// Small delay to ensure cookies are set
+				await new Promise(resolve => setTimeout(resolve, 100));
+				invalidateAll();
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	});
 </script>
 
 <svelte:head>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 	<link
-		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Reem+Kufi:wght@400&display=swap"
 		rel="stylesheet"
 	/>
 </svelte:head>

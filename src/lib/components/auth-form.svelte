@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
     import { page } from '$app/stores';
+    import { env } from '$env/dynamic/public';
     import { supabase } from '$lib/supabaseClient';
 	import Button from '$lib/components/ui/button.svelte';
     import Input from '$lib/components/ui/input.svelte';
@@ -15,26 +16,59 @@
 	let email = $state('');
 	let password = $state('');
 	let fullName = $state('');
+	let honeypot = $state('');
     let isLoading = $state(false);
     let errorMessage = $state('');
     let verificationNeeded = $state(false);
     let resendLoading = $state(false);
     let resendMessage = $state('');
+    let isGoogleLoading = $state(false);
+
+	const hasMinLength = $derived(mode === 'signin' ? password.length >= 6 : password.length >= 8);
+	const hasUppercase = $derived(/[A-Z]/.test(password));
+	const hasNumber = $derived(/[0-9]/.test(password));
+	const isPasswordValid = $derived(
+		mode === 'signin' ? hasMinLength : hasMinLength && hasUppercase && hasNumber
+	);
+	const isFormValid = $derived(email.trim().length > 0 && isPasswordValid);
+
+    async function signInWithGoogle() {
+        isGoogleLoading = true;
+        errorMessage = '';
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${env.PUBLIC_SITE_URL}/auth/callback`
+                }
+            });
+            if (error) throw error;
+            // The user is redirected to Google, so no need to set isGoogleLoading to false here.
+        } catch (error: any) {
+            console.error('Google Sign In error:', error);
+            errorMessage = error.message || 'An unexpected error occurred with Google Sign-In.';
+            isGoogleLoading = false; // Only set to false on error
+        }
+    }
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
+		if (honeypot) return;
+
+		const normalizedEmail = email.trim().toLowerCase();
         isLoading = true;
         errorMessage = '';
 
         try {
             if (mode === 'signup') {
                 const { error } = await supabase.auth.signUp({
-                    email,
+                    email: normalizedEmail,
                     password,
                     options: {
                         data: {
-                            full_name: fullName,
+                            full_name: fullName.trim(),
                         },
+                        emailRedirectTo: `${env.PUBLIC_SITE_URL}/signin`,
                     },
                 });
                 if (error) throw error;
@@ -42,7 +76,7 @@
                 verificationNeeded = true;
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
-                    email,
+                    email: normalizedEmail,
                     password,
                 });
                 if (error) {
@@ -65,7 +99,11 @@
             }
         } catch (error: any) {
             console.error('Auth error:', error);
-            errorMessage = error.message || 'An unexpected error occurred.';
+            if (error.status === 429 || error.message?.includes('rate limit')) {
+                errorMessage = 'Too many attempts. Please wait a moment and try again.';
+            } else {
+                errorMessage = error.message || 'An unexpected error occurred.';
+            }
         } finally {
             isLoading = false;
         }
@@ -187,6 +225,17 @@
                     />
                 </div>
 
+                <!-- Honeypot field -->
+                <input
+                    type="text"
+                    name="website"
+                    bind:value={honeypot}
+                    autocomplete="off"
+                    tabindex="-1"
+                    aria-hidden="true"
+                    style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;"
+                />
+
                 <div class="space-y-2">
                     <Label for="password" class="sr-only">Password</Label>
                     <Input
@@ -200,17 +249,18 @@
                         variant="underlined"
                         disabled={isLoading}
                     />
+                    {#if mode === 'signup' && password.length > 0}
+                        <div class="flex gap-3 text-xs pt-1">
+                            <span class={hasMinLength ? 'text-green-600' : 'text-muted-foreground'}>8+ chars</span>
+                            <span class={hasUppercase ? 'text-green-600' : 'text-muted-foreground'}>1 uppercase</span>
+                            <span class={hasNumber ? 'text-green-600' : 'text-muted-foreground'}>1 number</span>
+                        </div>
+                    {/if}
                 </div>
 
-                {#if mode === 'signin'}
-                    <div class="text-right">
-                        <a href="/forgot-password" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            Forgot password?
-                        </a>
-                    </div>
-                {/if}
 
-                <Button type="submit" class="w-full h-12 text-base font-medium rounded-lg" loading={isLoading}>
+
+                <Button type="submit" class="w-full h-12 text-base font-medium rounded-lg" loading={isLoading} disabled={isLoading || !isFormValid}>
                     {mode === 'signin' ? 'Sign in' : 'Create account'}
                 </Button>
             </form>
@@ -223,7 +273,14 @@
             </div>
 
             <!-- Google Sign In -->
-            <Button variant="outline" type="button" class="w-full h-12 text-base font-medium rounded-lg gap-3" onclick={() => console.log('Google Sign In - Coming Soon')}>
+            <Button
+                variant="outline"
+                type="button"
+                class="w-full h-12 text-base font-medium rounded-lg gap-3"
+                onclick={signInWithGoogle}
+                loading={isGoogleLoading}
+                disabled={isLoading || isGoogleLoading}
+            >
                 <svg class="size-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

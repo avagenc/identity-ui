@@ -1,51 +1,24 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
     import { supabase } from '$lib/supabaseClient';
     import Button from '$lib/components/ui/button.svelte';
+    import loadingSpinner from '$lib/assets/gooey-balls-2.svg';
+    import type { PageData } from './$types';
 
-    let session = $state<any>(null);
-    let loading = $state(true);
-    let user = $state<any>(null);
-
-    onMount(async () => {
-        try {
-            const { data, error } = await supabase.auth.getSession();
-            if (error) throw error;
-
-            if (!data.session) {
-                goto('/signin');
-                return;
-            }
-
-            session = data.session;
-            user = data.session.user;
-        } catch (e) {
-            console.error('Error fetching session:', e);
-            goto('/signin');
-        } finally {
-            loading = false;
-        }
-    });
+    let { data }: { data: PageData } = $props();
+    let user = $derived(data.session?.user ?? null);
 
     async function handleSignOut() {
         const { error } = await supabase.auth.signOut();
-        if (!error) {
-            goto('/signin');
-        }
     }
 </script>
 
-<svelte:head>
-    <title>My Account - Avagenc</title>
-</svelte:head>
-
 <div class="flex min-h-screen items-center justify-center p-4">
-    {#if loading}
+    {#if !user}
         <div class="flex flex-col items-center gap-4">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900"></div>
+             <img src={loadingSpinner} alt="Loading" class="h-12 w-12" />
         </div>
-    {:else if user}
+    {:else}
         <div class="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div class="text-center space-y-2">
                 <div class="h-20 w-20 bg-neutral-100 rounded-full mx-auto flex items-center justify-center mb-6">
@@ -53,7 +26,7 @@
                         {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                     </span>
                 </div>
-                <h1 class="text-2xl font-semibold tracking-tight">Welcome back</h1>
+                <h1 class="text-2xl font-semibold tracking-tight" style="font-family: 'Reem Kufi', sans-serif; font-weight: 400;">السلام عليكم</h1>
                 <p class="text-muted-foreground">{user.user_metadata?.full_name || 'User'}</p>
             </div>
 
